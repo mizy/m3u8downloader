@@ -1,0 +1,45 @@
+{
+  "name": "M3U8 Downloader",
+  "version": "0.0.0.1",
+  "manifest_version": 3,
+  "description": "A chromium extension to download m3u8 files and convert to mp4",
+  "icons": {
+    "16": "icons/nasapod16x16.png",
+    "32": "icons/nasapod32x32.png",
+    "48": "icons/nasapod48x48.png",
+    "128": "icons/nasapod128x128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "/lib/*",
+        "/content_script/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self' 'wasm-unsafe-eval';style-src 'unsafe-inline' 'self' "
+  },
+  "cross_origin_embedder_policy": {
+    "value": "require-corp"
+  },
+  "cross_origin_opener_policy": {
+    "value": "same-origin"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content_script/content.js"
+      ]
+    }
+  ]
+}

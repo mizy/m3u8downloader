@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <script src="../lib/jquery.min.js"></script>
+  <script src="../lib/ffmpeg.min.js"></script>
+  <script src="../lib/ffmpeg-core.js"></script>
+</head>
+<style>
+  body {
+    width: 500px;
+  }
+
+  .contents {
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+  }
+
+  .content-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .content-item>div {
+    margin-right: 20px;
+  }
+</style>
+
+<body>
+  <h1>m3u8 resources</h1>
+  <div class="contents" id="m3u8-list">
+    <div class="content-item">
+      <div>http://fff.m3u8</div>
+      <div><button data-url="http://fff.m3u8">download</button></div>
+    </div>
+    <div class="content-item">
+      <div>http://fff.m3u8</div>
+      <div><button data-url="http://fff.m3u8">download</button></div>
+    </div>
+  </div>
+  <button id="check">check</button>
+  <script src="popup.js"></script>
+</body>
+
+</html>
