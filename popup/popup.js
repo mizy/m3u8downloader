@@ -1,8 +1,34 @@
 
 $('#check').on('click', function () {
-  check();
+  const val = $('#m3u8-input').val();
+  if (val) {
+    download(val);
+  }
+})
+$('#refresh').on('click', function () {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, { type: 'refresh' }, function (response) {
+      console.log(response)
+    });
+  })
 })
 
+var list = {};
+chrome.webRequest.onBeforeRequest.addListener(function (details) {
+  if (details.url.indexOf(".m3u8") > -1 && details.url.indexOf("m3u8downloader") == -1) {
+    list[details.url] = details.url;
+    refreshM3u8List(list)
+  }
+  return { extraHeaders: details.requestHeaders };
+},
+  { urls: ["<all_urls>"] },
+  ["extraHeaders"]);
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == 'progress') {
+    document.querySelector('#progress').innerHTML = `${request.current}/${request.total}`;
+    document.querySelector('#progress').style.width = `${request.current * 100 / request.total}%`
+  }
+});
 let ffmpeg;
 const check = () => {
   if (!ffmpeg) {
@@ -19,19 +45,22 @@ const check = () => {
 const checkM3u8 = () => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.tabs.sendMessage(tabs[0].id, { type: 'check' }, function (response) {
+      list = response;
       refreshM3u8List(response)
     });
   })
 }
 
-const refreshM3u8List = (list) => {
-  $('#m3u8-list').empty();
-  list.forEach(item => {
-    $('#m3u8-list').append(`<div class="content-item">
-      <div>${item}</div>
-      <div><button data-url="${item}">download</button></div>
-    </div>`)
-  });
+const refreshM3u8List = (list = {}) => {
+  const content = Object.keys(list).map(key => `<li class="list-group-item container">
+        <div class="row" style="display:flex">
+          <div class="col-md-8">${key}</div>
+          <div class="col-md-4"><button class="btn btn-sm" data-url="${key}">download</button></div>
+        </div>
+      </li>`).join('');
+  $('#m3u8-list').html(`<ul class="list-group">
+    ${content}
+    </ul>`);
   addDownloadEvent();
 }
 

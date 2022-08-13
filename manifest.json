@@ -41,5 +41,11 @@
         "content_script/content.js"
       ]
     }
+  ],
+  "permissions": [
+    "webRequest"
+  ],
+  "host_permissions": [
+    "*://*/*"
   ]
 }
