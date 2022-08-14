@@ -1,9 +1,14 @@
 
-$('#check').on('click', function () {
+var list = {};
+matchM3u8();
+$('#parse').on('click', function () {
   const val = $('#m3u8-input').val();
   if (val) {
     download(val);
   }
+})
+$('#check').on('click', function () {
+  matchM3u8();
 })
 $('#refresh').on('click', function () {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -13,7 +18,6 @@ $('#refresh').on('click', function () {
   })
 })
 
-var list = {};
 chrome.webRequest.onBeforeRequest.addListener(function (details) {
   if (details.url.indexOf(".m3u8") > -1 && details.url.indexOf("m3u8downloader") == -1) {
     list[details.url] = details.url;
@@ -23,30 +27,24 @@ chrome.webRequest.onBeforeRequest.addListener(function (details) {
 },
   { urls: ["<all_urls>"] },
   ["extraHeaders"]);
+
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'progress') {
     document.querySelector('#progress').innerHTML = `${request.current}/${request.total}`;
     document.querySelector('#progress').style.width = `${request.current * 100 / request.total}%`
+  } else if (request.type == 'ffmpeg') {
+    make2mp4(request)
   }
 });
-let ffmpeg;
-const check = () => {
-  if (!ffmpeg) {
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    ffmpeg = createFFmpeg({
-      log: true,
-      corePath: '../lib/ffmpeg-core.js',
-    });
-    ffmpeg.load();
-  }
-  checkM3u8();
-}
 
-const checkM3u8 = () => {
+function matchM3u8() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.tabs.sendMessage(tabs[0].id, { type: 'check' }, function (response) {
-      list = response;
-      refreshM3u8List(response)
+      response.forEach(each => {
+        list[each] = each;
+      })
+      refreshM3u8List(list)
     });
   })
 }
@@ -71,23 +69,36 @@ const addDownloadEvent = () => {
   })
 }
 
+async function make2mp4(res) {
+  ffmpeg.FS('writeFile', res.title + '.ts', res.blob);
+  await ffmpeg.run('-i', res.title + '.ts', res.title + '.mp4');
+  const data = await ffmpeg.FS('readFile', res.title + '.mp4');
+  const blob = new Blob([data], { type: 'video/mp4' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = res.title + '.mp4';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const download = async (url) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { type: 'download', url }, function (response) {
-      console.log(response)
+    chrome.tabs.sendMessage(tabs[0].id, { type: 'download', url }, async function (res) {
     });
   })
-  // hidePlayer();
-  // showSpinner();
-  // const name = 'video';
-  // if (!ffmpeg.isLoaded()) {
-  //   await ffmpeg.load();
-  // }
+}
 
-  // ffmpeg.FS('writeFile', name, await fetchFile(file));
-  // await ffmpeg.run('-i', name, 'output.mp4');
-  // const data = ffmpeg.FS('readFile', 'output.mp4');
 
-  // hideSpinner();
-  // showPlayer(data);
-} 
+let ffmpeg;
+const init = () => {
+  if (!ffmpeg) {
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    ffmpeg = createFFmpeg({
+      log: true,
+      corePath: '../lib/ffmpeg-core.js',
+    });
+    ffmpeg.load();
+  }
+}
+init();

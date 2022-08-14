@@ -38,6 +38,7 @@
         "<all_urls>"
       ],
       "js": [
+        "lib/mux.min.js",
         "content_script/content.js"
       ]
     }

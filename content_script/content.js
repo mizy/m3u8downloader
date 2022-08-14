@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
     if (request.type === "check") {
-      sendResponse(checkM3u8());
+      sendResponse(matchM3u8());
     } else if (request.type === "download") {
       sendResponse(getM3U8(request.url));
     } else if (request.type === "stop") {
@@ -13,6 +13,14 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+function matchM3u8() {
+  const body = document.body.innerHTML;
+  const m3u8url = body.match(/http[s]?:\/\/[^\s]*\.m3u8/);
+  if (m3u8url) {
+    return m3u8url;
+  }
+  return []
+}
 
 function checkM3u8() {
   const list = {};
@@ -43,17 +51,39 @@ async function getM3U8(m3u8url) {
   await fetchM3U8File(m3u8url, tsList);
   const tsListArr = await fetchTSList(tsList);
   stopFetch = false;
-  const blob = new Blob(tsListArr, { type: 'video/mp2t' });
+  var blob = new Blob(tsListArr, { type: 'video/mp2t' });
+  const title = document.title.slice(0, 32).replace(' ', '-');
+
+  // const array = await blob.arrayBuffer();
+  // const unit8Array = new Uint8Array(array);
+  // const mp4arr = await convert2mp4(unit8Array);
+  // const mp4blob = new Blob(mp4arr, { type: 'video/mp4' });
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const title = document.title.slice(0, 32).replace(' ', '-');
   a.download = (title) + '.ts';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
   return url;
+}
+
+async function convert2mp4(arr) {
+  return new Promise((resolve) => {
+    let transmuxer = new muxjs.mp4.Transmuxer();
+    var sourceBuffer;
+    transmuxer.on('data', segment => {
+      sourceBuffer = (segment.data)
+    })
+    transmuxer.on('done', () => {
+      resolve(sourceBuffer)
+    })
+    transmuxer.push(arr);
+    transmuxer.flush();
+  })
 }
 
 async function fetchTSList(tsList) {

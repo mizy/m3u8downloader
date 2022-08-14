@@ -17,14 +17,19 @@
 
 <body>
   <h4>m3u8 downloader</h4>
+
   <div class="contents" id="m3u8-list">
 
   </div>
+
+
   <div class="input-group" style="display: flex;align-items: center;">
     <input type="email" class="form-control" id="m3u8-input" placeholder="m3u8地址">
-    <button type="submit" style="margin-left: 20px;" class="btn btn-primary" id="check">解析</button>
+    <button type="submit" style="margin-left: 20px;" class="btn btn-primary" id="parse">解析</button>
   </div>
-  <p class="bg-info" style="padding: 10px;margin-top: 20px;">网络请求监测中... <a href="javascript:void(0)" id="refresh">刷新</a>
+  <p class="bg-info" style="padding: 10px;margin-top: 20px;">网络请求监测中...
+    <a href="javascript:void(0)" id="refresh">刷新</a>
+    <a href="javascript:void(0)" id="check">匹配网页m3u8字符</a>
   </p>
   <div class="progress">
     <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
